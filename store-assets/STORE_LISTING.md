@@ -11,7 +11,7 @@ The uploadable package is the `extension/` folder, zipped (see checklist at the 
 
 **Summary** (≤132 characters):
 
-> Click anywhere on a live page to add numbered issue markers with comments and severity. Print or export an annotated report.
+> Click anywhere on a live page to add numbered issue markers with comments and severity. Export a shareable annotated report.
 
 **Category:** Developer Tools *(alternative: Productivity → Workflow & Planning)*
 
@@ -28,8 +28,6 @@ The uploadable package is the `extension/` folder, zipped (see checklist at the 
 > • Click anywhere to drop a numbered circle, or drag to outline an area
 > • Rate each issue Low, Medium, or High — markers, outlines, and cards are
 >   color-coded so the severe stuff reads at a glance
-> • Every marker records the element it sits on (e.g. <button> "Submit"), so
->   developers know exactly where to look — not roughly where
 > • Drag any number to reposition it; drag the comment editor out of the way
 >   when it covers what you're describing
 > • Numbers renumber automatically when you delete an issue — your list stays 1, 2, 3
@@ -50,9 +48,10 @@ The uploadable package is the `extension/` folder, zipped (see checklist at the 
 > SHARE A REPORT ANYONE CAN OPEN
 > • Export builds a single self-contained HTML file: a full-page screenshot
 >   with your numbered badges in place, beside every comment. Name the file
->   what you like, then email it or drop it in Slack — recipients need nothing
->   but a browser.
-> • Print produces the annotated page with the complete issue list appended.
+>   what you like — recipients need nothing but a browser.
+> • Share hands the report to Gmail or Slack: Gmail opens a pre-filled draft
+>   with the issue summary; Slack copies the summary to paste. Attach the
+>   downloaded report and send.
 >
 > PRIVATE BY ARCHITECTURE
 > Annotations live in your browser. Screenshots are assembled on your machine.

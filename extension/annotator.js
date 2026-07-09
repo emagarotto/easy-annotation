@@ -11,12 +11,7 @@
 
   // Second activation = toggle off. State is persisted, so nothing is lost.
   const existing = document.getElementById(HOST_ID);
-  if (existing) { existing.remove(); removePrintSheetById(); return; }
-
-  function removePrintSheetById() {
-    const s = document.getElementById("__redline_print");
-    if (s) s.remove();
-  }
+  if (existing) { existing.remove(); return; }
 
   // ---------- storage (chrome.storage in the extension, localStorage otherwise) ----------
   const KEY = "redline::" + location.origin + location.pathname;
@@ -39,7 +34,7 @@
   }
 
   // ---------- state ----------
-  let items = [];      // {x, y, w, h, comment, severity, context} — document px
+  let items = [];      // {x, y, w, h, comment, severity} — document px
   let editing = -1;
   let marking = true;
 
@@ -179,6 +174,14 @@
     }
     .export-name .btns .go { background: #2456e6; border-color: #2456e6; color: #fff; font-weight: 600; }
     .export-name .btns .go:hover { background: #1d49c7; }
+    .share-btns button {
+      flex: 1; padding: 6px 0;
+      font-size: 12.5px; font-weight: 600;
+      border: 1px solid #dcdfd9; border-radius: 5px;
+      background: #fff; color: #1b2430;
+    }
+    .share-btns button:hover { background: #e8edfc; border-color: #2456e6; color: #2456e6; }
+    .share-note { margin: 7px 0 0; font-size: 11px; line-height: 1.45; color: #5a6472; }
     .counts { display: flex; gap: 6px; padding: 0 0 8px; }
     .count-chip {
       font: 600 11px ui-monospace, monospace;
@@ -197,12 +200,21 @@
     }
     .rail-empty { margin: 26px 8px; text-align: center; color: #5a6472; font-size: 13px; }
     .card {
+      position: relative;
       display: grid; grid-template-columns: 26px 1fr; gap: 10px;
-      padding: 9px 11px; text-align: left;
+      padding: 9px 26px 9px 11px; text-align: left;
       border: 1px solid #dcdfd9; border-left: 3px solid var(--c, #d97e00);
       border-radius: 6px; background: #fff;
+      cursor: pointer;
     }
     .card:hover { background: #f1f2ef; }
+    .card-del {
+      position: absolute; top: 4px; right: 4px;
+      border: 0; background: none;
+      color: #9aa2ad; font-size: 12px; line-height: 1;
+      padding: 4px 6px; border-radius: 4px;
+    }
+    .card-del:hover { background: #fce9e6; color: #d8372a; }
     .card .num {
       width: 24px; height: 24px; border-radius: 50%;
       background: var(--c); color: #fff;
@@ -214,10 +226,6 @@
     }
     .card .comment { margin: 3px 0 0; color: #1b2430; overflow-wrap: anywhere; }
     .card .comment.empty { color: #9aa2ad; font-style: italic; }
-    .card .ctx {
-      margin: 3px 0 0; font: 11px ui-monospace, monospace;
-      color: #8a93a0; overflow-wrap: anywhere;
-    }
 
     /* collapsed tab */
     .tab {
@@ -304,11 +312,6 @@
     .pop-foot .done:hover { background: #2c3a4d; }
 
     [hidden] { display: none !important; }
-
-    @media print {
-      .panel, .popover, .tab { display: none !important; }
-      .marker, .anno-area { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    }
   `;
   shadow.appendChild(style);
 
@@ -325,8 +328,8 @@
         <button class="mode on" id="btnMode">Marking is on
           <small>Click or drag on the page to add an issue</small></button>
         <div class="p-actions">
-          <button id="btnPrint">Print</button>
           <button id="btnExport">Export</button>
+          <button id="btnShare">Share</button>
           <button id="btnClear">Clear</button>
         </div>
         <div class="export-name" id="exportName" hidden>
@@ -339,6 +342,15 @@
             <button id="exportCancel">Cancel</button>
             <button id="exportGo" class="go">Export</button>
           </div>
+        </div>
+        <div class="export-name" id="shareMenu" hidden>
+          <label>Share the report via</label>
+          <div class="row share-btns">
+            <button id="shareGmail">Gmail</button>
+            <button id="shareSlack">Slack</button>
+          </div>
+          <p class="share-note">Downloads the report, then opens a draft — attach the
+          downloaded file. Slack also copies a text summary to paste.</p>
         </div>
         <div class="counts" id="counts"></div>
       </div>
@@ -395,18 +407,6 @@
     return String(s).replace(/[&<>"']/g, (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
-  function contextAt(clientX, clientY) {
-    // What page element is under this point? (skip our own host)
-    const el = document.elementsFromPoint(clientX, clientY)
-      .find((e) => e !== host && !host.contains(e) &&
-                   e !== document.documentElement && e !== document.body);
-    if (!el) return "";
-    const txt = (el.innerText || el.getAttribute("aria-label") || el.getAttribute("alt") || "")
-      .trim().replace(/\s+/g, " ").slice(0, 60);
-    return "<" + el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + ">" +
-           (txt ? ' “' + txt + '”' : "");
-  }
-
   // ---------- rendering ----------
   function render() {
     overlay.querySelectorAll(".marker, .anno-area:not(.rubber)").forEach((n) => n.remove());
@@ -427,7 +427,6 @@
       overlay.appendChild(m);
     });
     renderList();
-    updatePrintSheet();
     persist({ items, savedAt: Date.now(), title: document.title, url: location.href });
   }
 
@@ -445,16 +444,18 @@
       return;
     }
     items.forEach((it, i) => {
-      const card = document.createElement("button");
+      const card = document.createElement("div");
       card.className = "card s-" + it.severity;
       card.dataset.index = i;
+      card.setAttribute("role", "button");
+      card.tabIndex = 0;
       card.innerHTML = `
         <span class="num">${i + 1}</span>
         <span>
           <span class="sev-tag">${it.severity}</span>
           <p class="comment${it.comment ? "" : " empty"}">${it.comment ? escapeHTML(it.comment) : "No comment yet"}</p>
-          ${it.context ? `<p class="ctx">${escapeHTML(it.context)}</p>` : ""}
-        </span>`;
+        </span>
+        <button class="card-del" title="Delete issue ${i + 1}" aria-label="Delete issue ${i + 1}">&#10005;</button>`;
       list.appendChild(card);
     });
   }
@@ -519,7 +520,6 @@
     closeEditor();
     drag = {
       x0: e.pageX, y0: e.pageY,
-      ctx: contextAt(e.clientX, e.clientY),
       rubber: null, rect: null,
     };
     try { overlay.setPointerCapture(e.pointerId); } catch (err) { /* synthetic events */ }
@@ -563,7 +563,6 @@
         const it = items[move.i];
         it.x = move.nx;
         it.y = move.ny;
-        it.context = contextAt(move.nx - scrollX, move.ny - scrollY) || it.context;
         suppressClick = true;               // don't open the editor after a move
         setTimeout(() => { suppressClick = false; }, 0);
         render();
@@ -576,9 +575,8 @@
     const rect = drag.rect && drag.rect.w > 8 && drag.rect.h > 8
       ? drag.rect
       : { x: drag.x0, y: drag.y0, w: 0, h: 0 };
-    const ctx = drag.ctx;
     drag = null;
-    items.push({ ...rect, comment: "", severity: "medium", context: ctx });
+    items.push({ ...rect, comment: "", severity: "medium" });
     render();
     openEditor(items.length - 1);
   });
@@ -596,12 +594,26 @@
 
   // ---------- panel controls ----------
   list.addEventListener("click", (e) => {
+    const del = e.target.closest(".card-del");
+    if (del) {
+      const i = +del.closest(".card").dataset.index;
+      closeEditor();               // indices shift after the splice
+      items.splice(i, 1);          // remaining issues renumber automatically
+      render();
+      return;
+    }
     const card = e.target.closest(".card");
     if (!card) return;
     const i = +card.dataset.index;
     const marker = overlay.querySelector(`.marker[data-index="${i}"]`);
     marker.scrollIntoView({ block: "center", behavior: "smooth" });
     setTimeout(() => openEditor(i), 250);
+  });
+  list.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("card")) {
+      e.preventDefault();
+      e.target.click();
+    }
   });
 
   function setMarking(on) {
@@ -617,14 +629,13 @@
 
   $("btnCollapse").addEventListener("click", () => { panel.hidden = true; tab.hidden = false; });
   tab.addEventListener("click", () => { tab.hidden = true; panel.hidden = false; });
-  $("btnClose").addEventListener("click", () => { closeEditor(); host.remove(); removePrintSheetById(); });
+  $("btnClose").addEventListener("click", () => { closeEditor(); host.remove(); });
 
   $("btnClear").addEventListener("click", () => {
     if (!items.length || confirm(`Remove all ${items.length} annotations on this page?`)) {
       items = []; closeEditor(); render();
     }
   });
-  $("btnPrint").addEventListener("click", () => { closeEditor(); window.print(); });
 
   // ---------- popover controls ----------
   popover.querySelectorAll(".sev-btn").forEach((b) => {
@@ -807,32 +818,6 @@
     if (tidyUndo !== null && !tidyBusy) resetTidy();
   });
 
-  // ---------- print sheet (light DOM, appended after page content) ----------
-  function updatePrintSheet() {
-    removePrintSheetById();
-    if (!items.length) return;
-    const sheet = document.createElement("div");
-    sheet.id = "__redline_print";
-    const rows = items.map((it, i) => `
-      <div style="display:grid;grid-template-columns:26px 1fr;gap:10px;padding:8px 10px;margin:0 0 6px;
-                  border:1px solid #ccc;border-left:3px solid ${sevColor(it.severity)};border-radius:6px;break-inside:avoid">
-        <span style="width:24px;height:24px;border-radius:50%;background:${sevColor(it.severity)};color:#fff;
-                     font:700 11px/24px monospace;text-align:center;print-color-adjust:exact;-webkit-print-color-adjust:exact">${i + 1}</span>
-        <div><span style="font:600 10.5px monospace;letter-spacing:.06em;text-transform:uppercase;color:${sevColor(it.severity)}">${it.severity}</span>
-        <p style="margin:2px 0 0;font:13px/1.45 sans-serif;color:#111">${it.comment ? escapeHTML(it.comment) : "<em>No comment</em>"}</p>
-        ${it.context ? `<p style="margin:2px 0 0;font:11px monospace;color:#777">${escapeHTML(it.context)}</p>` : ""}</div>
-      </div>`).join("");
-    sheet.innerHTML = `
-      <style>#__redline_print{display:none}@media print{#__redline_print{display:block !important}}</style>
-      <div style="margin-top:24px;padding-top:14px;border-top:2px solid #333">
-        <p style="font:700 11px sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#555;margin:0 0 10px">
-          Easy Annotation issues — ${escapeHTML(location.href)}</p>
-        ${rows}
-      </div>`;
-    document.body.appendChild(sheet);
-  }
-  function sevColor(s) { return { low: "#2e9e5b", medium: "#d97e00", high: "#d8372a" }[s]; }
-
   // ---------- full-page capture (slices via the background worker) ----------
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   function loadImage(src) {
@@ -895,6 +880,7 @@
   $("btnExport").addEventListener("click", () => {
     if ($("btnExport").disabled) return;
     const box = $("exportName");
+    $("shareMenu").hidden = true;
     if (!box.hidden) { box.hidden = true; return; } // second click toggles it closed
     $("exportFile").value = defaultExportName();
     box.hidden = false;
@@ -907,14 +893,18 @@
     else if (e.key === "Escape") $("exportName").hidden = true;
   });
 
-  $("exportGo").addEventListener("click", async () => {
-    const btn = $("btnExport");
-    if (btn.disabled) return;
+  $("exportGo").addEventListener("click", () => {
     const raw = $("exportFile").value
       .replace(/[\\/:*?"<>|]+/g, " ")   // strip characters filesystems reject
       .replace(/\s+/g, " ").trim();
     const filename = (raw.replace(/\.html?$/i, "").trim() || defaultExportName()) + ".html";
     $("exportName").hidden = true;
+    buildAndDownloadReport(filename);
+  });
+
+  async function buildAndDownloadReport(filename) {
+    const btn = $("btnExport");
+    if (btn.disabled) return false;
     closeEditor();
     btn.disabled = true;
     btn.textContent = "Capturing…";
@@ -931,8 +921,7 @@
       <div class="card s-${it.severity}">
         <span class="n">${i + 1}</span>
         <div><span class="t">${it.severity}</span>
-        <p>${it.comment ? escapeHTML(it.comment) : "<em>No comment</em>"}</p>
-        ${it.context ? `<p class="ctx">${escapeHTML(it.context)}</p>` : ""}</div>
+        <p>${it.comment ? escapeHTML(it.comment) : "<em>No comment</em>"}</p></div>
       </div>`).join("");
     const body = shot
       ? `<div class="grid">
@@ -958,7 +947,6 @@
   .card .n{width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font:700 11px/24px ui-monospace,monospace;text-align:center}
   .card .t{font:600 10.5px ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
   .card p{margin:3px 0 0;overflow-wrap:anywhere}
-  .card .ctx{font:11px ui-monospace,monospace;color:#8a93a0}
   .grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
   @media(max-width:900px){.grid{grid-template-columns:1fr}}
   .sheet{background:#fff;border:1px solid #dcdfd9;box-shadow:0 2px 12px rgba(27,36,48,.08)}
@@ -980,6 +968,56 @@ ${body}
     a.download = filename;
     a.click();
     URL.revokeObjectURL(a.href);
+    return true;
+  }
+
+  // ---------- share (Gmail / Slack) ----------
+  $("btnShare").addEventListener("click", () => {
+    if ($("btnExport").disabled) return;
+    $("exportName").hidden = true;
+    const menu = $("shareMenu");
+    menu.hidden = !menu.hidden;
+  });
+
+  function shareSummary(filename) {
+    const tally = { low: 0, medium: 0, high: 0 };
+    items.forEach((it) => tally[it.severity]++);
+    const lines = items.map((it, i) =>
+      `${i + 1}. [${it.severity.toUpperCase()}] ${it.comment || "(no comment)"}`);
+    return `Easy Annotation report — ${document.title}\n${location.href}\n` +
+      `${items.length} issue${items.length === 1 ? "" : "s"} ` +
+      `(${tally.high} high, ${tally.medium} medium, ${tally.low} low)\n\n` +
+      lines.join("\n") +
+      `\n\nFull annotated report with screenshots: attached (${filename}).`;
+  }
+
+  function openUrl(url) {
+    try {
+      chrome.runtime.sendMessage({ type: "redline-open", url });
+    } catch (e) {
+      window.open(url, "_blank", "noopener"); // non-extension fallback
+    }
+  }
+
+  $("shareGmail").addEventListener("click", async () => {
+    $("shareMenu").hidden = true;
+    const filename = defaultExportName() + ".html";
+    const subject = `Easy Annotation report — ${document.title}`;
+    const body = shareSummary(filename).slice(0, 1500); // stay under URL length limits
+    if (await buildAndDownloadReport(filename)) {
+      openUrl("https://mail.google.com/mail/?view=cm&fs=1&su=" +
+        encodeURIComponent(subject) + "&body=" + encodeURIComponent(body));
+    }
+  });
+
+  $("shareSlack").addEventListener("click", async () => {
+    $("shareMenu").hidden = true;
+    const filename = defaultExportName() + ".html";
+    // copy now, while the click's user activation is still valid
+    try { await navigator.clipboard.writeText(shareSummary(filename)); } catch (e) { /* clipboard unavailable */ }
+    if (await buildAndDownloadReport(filename)) {
+      openUrl("https://app.slack.com/");
+    }
   });
 
   // ---------- boot ----------

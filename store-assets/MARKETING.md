@@ -30,7 +30,7 @@ Pick one and stay with it — don't rotate.
 ## Store summary options (all ≤132 characters)
 
 1. *(current)* Click anywhere on a live page to add numbered issue markers
-   with comments and severity. Print or export an annotated report.
+   with comments and severity. Export a shareable annotated report.
 2. Turn any webpage into a review canvas — numbered markers, severity ratings,
    voice comments, and a shareable full-page report.
 3. QA feedback that points at the pixel: numbered markers, comments, and
@@ -62,7 +62,6 @@ Use these pairs anywhere features get listed; lead with the benefit.
 | Feature | Benefit-led copy |
 |---|---|
 | Numbered markers on the live page | "Issue 3" means one exact spot — no more 'the button near the top.' |
-| Element context capture | Each marker records what it's pinned to (`<button> "Submit"`), so devs search the code, not the page. |
 | Severity colors | The red things get fixed first. Triage happens at a glance, not in a meeting. |
 | Voice dictation + on-device Tidy | Say it fast, publish it clean. The AI cleanup runs on your machine — nothing is uploaded. |
 | Full-page export | One HTML file is the entire review. Slack it, email it — it opens anywhere, forever. |

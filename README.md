@@ -24,8 +24,6 @@ The project ships as two tools that share one UI:
 - **Severity triage** — every issue is Low / Medium / High, color-coded
   (green / amber / red) on the markers, outlines, and comment cards, with
   running tallies in the panel.
-- **Element context** *(extension)* — each marker records what it's pinned to
-  (e.g. `<button> "Submit"`), so developers search the code, not the page.
 - **Voice dictation** — comments can be spoken; the transcript streams in live
   via the browser's built-in speech recognition.
 - **On-device AI cleanup** — the *Tidy* button fixes grammar and clarity using
@@ -39,7 +37,9 @@ The project ships as two tools that share one UI:
 - **Export** — one self-contained HTML file with a stitched full-page
   screenshot (badges in place) beside every comment, with an optional custom
   filename. Opens in any browser; nothing to host.
-- **Print** — the annotated page with the complete issue list appended.
+- **Share** — hand the report to **Gmail** (opens a pre-filled draft with the
+  issue summary; attach the just-downloaded file) or **Slack** (copies a text
+  summary to paste alongside the file). No OAuth, no connected accounts.
 - **Autosave** — annotations persist per-URL in local storage; a half-finished
   review survives the tab, the restart, and the weekend.
 
