@@ -37,9 +37,6 @@ The project ships as two tools that share one UI:
 - **Export** — one self-contained HTML file with a stitched full-page
   screenshot (badges in place) beside every comment, with an optional custom
   filename. Opens in any browser; nothing to host.
-- **Share** — hand the report to **Gmail** (opens a pre-filled draft with the
-  issue summary; attach the just-downloaded file) or **Slack** (copies a text
-  summary to paste alongside the file). No OAuth, no connected accounts.
 - **Autosave** — annotations persist per-URL in local storage; a half-finished
   review survives the tab, the restart, and the weekend.
 

@@ -48,10 +48,4 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     tidy(msg.text).then(sendResponse, () => sendResponse({ error: "failed" }));
     return true; // keep the channel open for the async response
   }
-  // Open a share destination (Gmail compose / Slack) in a new tab. Done here
-  // rather than window.open in the page: the user gesture has expired by the
-  // time the screenshot capture finishes, and tabs.create needs no gesture.
-  if (msg && msg.type === "redline-open" && typeof msg.url === "string" && /^https:\/\//.test(msg.url)) {
-    chrome.tabs.create({ url: msg.url });
-  }
 });

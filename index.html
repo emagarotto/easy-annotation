@@ -321,14 +321,6 @@
   }
   .export-name .btns .go { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
   .export-name .btns .go:hover { background: #1d49c7; }
-  .share-btns button {
-    flex: 1; padding: 6px 0;
-    font-size: 12.5px; font-weight: 600;
-    border: 1px solid var(--line); border-radius: 5px;
-    background: var(--sheet); color: var(--ink);
-  }
-  .share-btns button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
-  .share-note { margin: 7px 0 0; font-size: 11px; line-height: 1.45; color: var(--ink-soft); }
   @keyframes recpulse { 50% { box-shadow: 0 0 0 5px rgba(216,55,42,.22); } }
   .mic.busy { border-color: var(--accent); color: var(--accent); }
   .mic.busy svg { animation: tidyspin 1s ease-in-out infinite; }
@@ -456,7 +448,6 @@
       <button class="btn" id="btnImage">Replace image</button>
       <button class="btn" id="btnClear">Clear all</button>
       <button class="btn primary" id="btnExport">Export HTML</button>
-      <button class="btn" id="btnShare">Share</button>
     </div>
   </header>
 
@@ -527,16 +518,6 @@
     <button id="exportCancel">Cancel</button>
     <button id="exportGo" class="go">Export</button>
   </div>
-</div>
-
-<div class="export-name" id="shareMenu" hidden>
-  <label>Share the report via</label>
-  <div class="row share-btns">
-    <button id="shareGmail">Gmail</button>
-    <button id="shareSlack">Slack</button>
-  </div>
-  <p class="share-note">Downloads the report, then opens a draft — attach the
-  downloaded file. Slack also copies a text summary to paste.</p>
 </div>
 
 <input type="file" id="fileInput" accept="image/*" hidden>
@@ -1080,7 +1061,6 @@
 
   $("btnExport").addEventListener("click", () => {
     const box = $("exportName");
-    $("shareMenu").hidden = true;
     if (!box.hidden) { box.hidden = true; return; } // second click toggles it closed
     const r = $("btnExport").getBoundingClientRect();
     box.style.top = (r.bottom + 8) + "px";
@@ -1173,49 +1153,6 @@
     a.click();
     URL.revokeObjectURL(a.href);
   }
-
-  // share (Gmail / Slack) ---------------------------------------------------
-  $("btnShare").addEventListener("click", () => {
-    $("exportName").hidden = true;
-    const menu = $("shareMenu");
-    if (!menu.hidden) { menu.hidden = true; return; }
-    const r = $("btnShare").getBoundingClientRect();
-    menu.style.top = (r.bottom + 8) + "px";
-    menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 286)) + "px";
-    menu.hidden = false;
-  });
-
-  function shareSummary(filename) {
-    const title = $("docTitle").textContent.trim() || "Untitled review";
-    const tally = { low: 0, medium: 0, high: 0 };
-    items.forEach((it) => tally[it.severity]++);
-    const lines = items.map((it, i) =>
-      `${i + 1}. [${it.severity.toUpperCase()}] ${it.comment || "(no comment)"}`);
-    return `Easy Annotation report — ${title}\n` +
-      `${items.length} issue${items.length === 1 ? "" : "s"} ` +
-      `(${tally.high} high, ${tally.medium} medium, ${tally.low} low)\n\n` +
-      lines.join("\n") +
-      `\n\nFull annotated report with screenshots: attached (${filename}).`;
-  }
-
-  $("shareGmail").addEventListener("click", () => {
-    $("shareMenu").hidden = true;
-    const filename = defaultExportName() + ".html";
-    const title = $("docTitle").textContent.trim() || "Untitled review";
-    const body = shareSummary(filename).slice(0, 1500); // stay under URL length limits
-    downloadReport(filename);
-    window.open("https://mail.google.com/mail/?view=cm&fs=1&su=" +
-      encodeURIComponent(`Easy Annotation report — ${title}`) +
-      "&body=" + encodeURIComponent(body), "_blank", "noopener");
-  });
-
-  $("shareSlack").addEventListener("click", async () => {
-    $("shareMenu").hidden = true;
-    const filename = defaultExportName() + ".html";
-    try { await navigator.clipboard.writeText(shareSummary(filename)); } catch (e) { /* clipboard unavailable */ }
-    downloadReport(filename);
-    window.open("https://app.slack.com/", "_blank", "noopener");
-  });
 
   load();
   if (!imageSrc) renderRail();

@@ -48,10 +48,8 @@ The uploadable package is the `extension/` folder, zipped (see checklist at the 
 > SHARE A REPORT ANYONE CAN OPEN
 > • Export builds a single self-contained HTML file: a full-page screenshot
 >   with your numbered badges in place, beside every comment. Name the file
->   what you like — recipients need nothing but a browser.
-> • Share hands the report to Gmail or Slack: Gmail opens a pre-filled draft
->   with the issue summary; Slack copies the summary to paste. Attach the
->   downloaded report and send.
+>   what you like, then email it or drop it in Slack — recipients need nothing
+>   but a browser.
 >
 > PRIVATE BY ARCHITECTURE
 > Annotations live in your browser. Screenshots are assembled on your machine.

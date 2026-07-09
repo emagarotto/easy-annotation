@@ -174,14 +174,6 @@
     }
     .export-name .btns .go { background: #2456e6; border-color: #2456e6; color: #fff; font-weight: 600; }
     .export-name .btns .go:hover { background: #1d49c7; }
-    .share-btns button {
-      flex: 1; padding: 6px 0;
-      font-size: 12.5px; font-weight: 600;
-      border: 1px solid #dcdfd9; border-radius: 5px;
-      background: #fff; color: #1b2430;
-    }
-    .share-btns button:hover { background: #e8edfc; border-color: #2456e6; color: #2456e6; }
-    .share-note { margin: 7px 0 0; font-size: 11px; line-height: 1.45; color: #5a6472; }
     .counts { display: flex; gap: 6px; padding: 0 0 8px; }
     .count-chip {
       font: 600 11px ui-monospace, monospace;
@@ -329,7 +321,6 @@
           <small>Click or drag on the page to add an issue</small></button>
         <div class="p-actions">
           <button id="btnExport">Export</button>
-          <button id="btnShare">Share</button>
           <button id="btnClear">Clear</button>
         </div>
         <div class="export-name" id="exportName" hidden>
@@ -342,15 +333,6 @@
             <button id="exportCancel">Cancel</button>
             <button id="exportGo" class="go">Export</button>
           </div>
-        </div>
-        <div class="export-name" id="shareMenu" hidden>
-          <label>Share the report via</label>
-          <div class="row share-btns">
-            <button id="shareGmail">Gmail</button>
-            <button id="shareSlack">Slack</button>
-          </div>
-          <p class="share-note">Downloads the report, then opens a draft — attach the
-          downloaded file. Slack also copies a text summary to paste.</p>
         </div>
         <div class="counts" id="counts"></div>
       </div>
@@ -880,7 +862,6 @@
   $("btnExport").addEventListener("click", () => {
     if ($("btnExport").disabled) return;
     const box = $("exportName");
-    $("shareMenu").hidden = true;
     if (!box.hidden) { box.hidden = true; return; } // second click toggles it closed
     $("exportFile").value = defaultExportName();
     box.hidden = false;
@@ -970,55 +951,6 @@ ${body}
     URL.revokeObjectURL(a.href);
     return true;
   }
-
-  // ---------- share (Gmail / Slack) ----------
-  $("btnShare").addEventListener("click", () => {
-    if ($("btnExport").disabled) return;
-    $("exportName").hidden = true;
-    const menu = $("shareMenu");
-    menu.hidden = !menu.hidden;
-  });
-
-  function shareSummary(filename) {
-    const tally = { low: 0, medium: 0, high: 0 };
-    items.forEach((it) => tally[it.severity]++);
-    const lines = items.map((it, i) =>
-      `${i + 1}. [${it.severity.toUpperCase()}] ${it.comment || "(no comment)"}`);
-    return `Easy Annotation report — ${document.title}\n${location.href}\n` +
-      `${items.length} issue${items.length === 1 ? "" : "s"} ` +
-      `(${tally.high} high, ${tally.medium} medium, ${tally.low} low)\n\n` +
-      lines.join("\n") +
-      `\n\nFull annotated report with screenshots: attached (${filename}).`;
-  }
-
-  function openUrl(url) {
-    try {
-      chrome.runtime.sendMessage({ type: "redline-open", url });
-    } catch (e) {
-      window.open(url, "_blank", "noopener"); // non-extension fallback
-    }
-  }
-
-  $("shareGmail").addEventListener("click", async () => {
-    $("shareMenu").hidden = true;
-    const filename = defaultExportName() + ".html";
-    const subject = `Easy Annotation report — ${document.title}`;
-    const body = shareSummary(filename).slice(0, 1500); // stay under URL length limits
-    if (await buildAndDownloadReport(filename)) {
-      openUrl("https://mail.google.com/mail/?view=cm&fs=1&su=" +
-        encodeURIComponent(subject) + "&body=" + encodeURIComponent(body));
-    }
-  });
-
-  $("shareSlack").addEventListener("click", async () => {
-    $("shareMenu").hidden = true;
-    const filename = defaultExportName() + ".html";
-    // copy now, while the click's user activation is still valid
-    try { await navigator.clipboard.writeText(shareSummary(filename)); } catch (e) { /* clipboard unavailable */ }
-    if (await buildAndDownloadReport(filename)) {
-      openUrl("https://app.slack.com/");
-    }
-  });
 
   // ---------- boot ----------
   restore((data) => {
