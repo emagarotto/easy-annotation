@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>tile 1400x560</title>
+<style>
+  body {
+    margin: 0; width: 1400px; height: 560px; overflow: hidden;
+    background: #1b2430;
+    font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 72px;
+    position: relative; color: #fff;
+  }
+  .marker {
+    position: absolute; width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.85); color: #fff;
+    font: 700 15px/30px ui-monospace, monospace; text-align: center;
+  }
+  .area { position: absolute; border: 2px dashed rgba(36,86,230,.5); border-radius: 5px; }
+  .brand { display: flex; flex-direction: column; align-items: flex-start; }
+  .mark {
+    width: 84px; height: 84px; border-radius: 50%;
+    background: #2456e6; color: #fff;
+    font: 700 40px/84px ui-monospace, monospace; text-align: center;
+    border: 4px solid #fff;
+    box-shadow: 0 6px 28px rgba(0,0,0,.45);
+    margin-bottom: 26px;
+  }
+  h1 { margin: 0; font-size: 58px; font-weight: 600; letter-spacing: .01em; }
+  .tag { margin: 14px 0 0; font-size: 22px; color: #9fb0c7; }
+  .feats { margin: 26px 0 0; display: flex; gap: 14px; }
+  .feats span {
+    padding: 7px 16px; border: 1px solid rgba(255,255,255,.25); border-radius: 99px;
+    font-size: 15px; color: #c9d2de;
+  }
+</style>
+</head>
+<body>
+  <div class="area" style="left:100px;top:110px;width:220px;height:120px"></div>
+  <div class="marker" style="left:82px;top:94px;background:#d97e00">2</div>
+  <div class="marker" style="left:210px;bottom:96px;background:#2e9e5b">5</div>
+  <div class="marker" style="right:150px;top:88px;background:#d8372a">3</div>
+  <div class="area" style="right:96px;bottom:80px;width:180px;height:100px"></div>
+  <div class="marker" style="right:260px;bottom:164px;background:#2456e6">4</div>
+  <div class="brand">
+    <div class="mark">1</div>
+    <h1>Easy Annotation</h1>
+    <p class="tag">Mark up any live webpage — numbered issues, severity, comments.</p>
+    <div class="feats">
+      <span>Click to annotate</span>
+      <span>Dictate by voice</span>
+      <span>On-device AI tidy</span>
+      <span>Export a full-page report</span>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Easy Annotation report — store screenshot</title>
+<style>
+  body{margin:0;font:14px/1.5 "Avenir Next","Segoe UI",system-ui,sans-serif;color:#1b2430;background:#f1f2ef}
+  .wrap{max-width:1232px;margin:0 auto;padding:28px 24px}
+  h1{margin:0;font-size:21px}
+  header p{margin:4px 0 0;color:#5a6472;font-size:13px}
+  header a{color:#2456e6;text-decoration:none}
+  .chips{display:flex;gap:6px;margin:12px 0 20px;font:600 11.5px ui-monospace,monospace}
+  .chips span{padding:2px 9px;border-radius:99px}
+  .c-high{color:#d8372a;background:#fce9e6}.c-med{color:#a35f00;background:#fbf0de}.c-low{color:#2e9e5b;background:#e5f4ea}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start}
+  .sheet{position:relative;background:#fff;border:1px solid #dcdfd9;box-shadow:0 2px 12px rgba(27,36,48,.08)}
+  .s-low{--c:#2e9e5b}.s-medium{--c:#d97e00}.s-high{--c:#d8372a}
+  .a{position:absolute;border:2px solid var(--c);background:color-mix(in srgb,var(--c) 10%,transparent);border-radius:3px}
+  .m{position:absolute;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;border:2px solid #fff;
+     background:var(--c);color:#fff;font:700 12px/22px ui-monospace,monospace;text-align:center;box-shadow:0 1px 4px rgba(27,36,48,.4)}
+  .rail{display:flex;flex-direction:column;gap:8px}
+  .card{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:10px 12px;background:#fff;
+        border:1px solid #dcdfd9;border-left:3px solid var(--c);border-radius:6px}
+  .card .n{width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font:700 11px/24px ui-monospace,monospace;text-align:center}
+  .card .t{font:600 10.5px ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+  .card p{margin:3px 0 0}
+  .card .ctx{font:11px ui-monospace,monospace;color:#8a93a0}
+  /* mock page inside the sheet */
+  .page{font:16px/1.6 Georgia,serif;color:#222}
+  .page nav{display:flex;gap:20px;align-items:center;padding:14px 32px;background:#14532d;color:#fff;font-family:sans-serif}
+  .page nav a{color:#d1fae5;text-decoration:none}
+  .page .hero{padding:60px 32px;background:#f0fdf4}
+  .page .hero h1{margin:0 0 8px;font-size:34px}
+  .page .cta{display:inline-block;padding:10px 22px;border:0;border-radius:6px;background:#16a34a;color:#fff;font-size:15px;font-family:sans-serif}
+  .page main{max-width:680px;margin:0 auto;padding:40px 24px 60px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Evergreen Trails — homepage QA</h1>
+    <p>Easy Annotation report · July 9, 2026 · 3 issues<br>
+    <a href="#">https://evergreentrails.example.com/</a></p>
+  </header>
+  <div class="chips"><span class="c-high">1 high</span><span class="c-med">1 med</span><span class="c-low">1 low</span></div>
+  <div class="grid">
+    <div class="sheet">
+      <div class="page">
+        <nav><strong>Evergreen Trails</strong><a href="#">Routes</a><a href="#">Gear</a><a href="#">Journal</a></nav>
+        <div class="hero">
+          <h1>Find your next long walk</h1>
+          <p>Hand-mapped routes, honest difficulty ratings, and packing lists that fit in a carry-on.</p>
+          <span class="cta">Browse routes</span>
+        </div>
+        <main>
+          <h2>The Ridgeway in three days</h2>
+          <p>Britain's oldest road runs 87 miles along the chalk downs. We split it into three
+             manageable days with a pub at the end of each one.</p>
+          <h2>What to pack</h2>
+          <p>One change of socks per day, a windproof layer, and the smallest first-aid kit
+             you can assemble yourself.</p>
+        </main>
+      </div>
+      <div style="position:absolute;inset:0">
+        <div class="m s-high" style="left:330px;top:26px">1</div>
+        <div class="a s-medium" style="left:26px;top:100px;width:470px;height:58px"></div>
+        <div class="m s-medium" style="left:26px;top:100px">2</div>
+        <div class="m s-low" style="left:130px;top:560px">3</div>
+      </div>
+    </div>
+    <div class="rail">
+      <div class="card s-high">
+        <span class="n">1</span>
+        <div><span class="t">high</span>
+        <p>Nav link contrast fails WCAG AA on the green background</p>
+        <p class="ctx">&lt;a&gt; “Journal”</p></div>
+      </div>
+      <div class="card s-medium">
+        <span class="n">2</span>
+        <div><span class="t">medium</span>
+        <p>Headline gets clipped on narrow viewports — needs a responsive size</p>
+        <p class="ctx">&lt;h1&gt; “Find your next long walk”</p></div>
+      </div>
+      <div class="card s-low">
+        <span class="n">3</span>
+        <div><span class="t">low</span>
+        <p>Packing list should link to the gear shop</p>
+        <p class="ctx">&lt;h2&gt; “What to pack”</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

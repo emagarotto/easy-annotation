@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Evergreen Trails — editor close-up</title>
+<style>
+  body { margin: 0; font: 16px/1.6 Georgia, serif; color: #222; }
+  nav { display: flex; gap: 20px; align-items: center; padding: 14px 32px; background: #14532d; color: #fff; font-family: sans-serif; }
+  nav a { color: #d1fae5; text-decoration: none; }
+  .hero { padding: 60px 32px; background: #f0fdf4; }
+  .hero h1 { margin: 0 0 8px; font-size: 34px; }
+  button.cta { padding: 10px 22px; border: 0; border-radius: 6px; background: #16a34a; color: #fff; font-size: 15px; }
+</style>
+</head>
+<body>
+  <nav><strong>Evergreen Trails</strong><a href="#">Routes</a><a href="#">Gear</a><a href="#">Journal</a></nav>
+  <div class="hero">
+    <h1>Find your next long walk</h1>
+    <p>Hand-mapped routes, honest difficulty ratings, and packing lists that fit in a carry-on.</p>
+    <button class="cta">Browse routes</button>
+  </div>
+  <script>
+    // seed annotations
+    localStorage.setItem('redline::' + location.origin + location.pathname, JSON.stringify({items: [
+      {x: 330, y: 26,  w: 0,   h: 0,  severity: 'high',   comment: 'Nav link contrast fails WCAG AA', context: '<a> “Journal”'},
+      {x: 26,  y: 100, w: 470, h: 58, severity: 'medium', comment: '', context: '<h1> “Find your next long walk”'}
+    ]}));
+    // make the Tidy button visible + hold Dictate in its listening state
+    window.chrome = { runtime: { sendMessage() {} } };
+    window.SpeechRecognition = window.webkitSpeechRecognition = class {
+      start() {}
+      stop() { if (this.onend) this.onend(); }
+    };
+  </script>
+  <script src="/extension/annotator.js"></script>
+  <script>
+    window.addEventListener('load', () => setTimeout(() => {
+      const shadow = document.getElementById('__redline_host').shadowRoot;
+      shadow.getElementById('btnCollapse').click(); // collapse the panel for the close-up
+      shadow.querySelector('.marker[data-index="1"]').dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      shadow.getElementById('popComment').value =
+        'The headline gets clipped on narrow viewports — needs a responsive font size.';
+      shadow.getElementById('popMic').click(); // shows the red “Listening…” state
+    }, 300));
+  </script>
+</body>
+</html>

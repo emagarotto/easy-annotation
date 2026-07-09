@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evergreen Trails — Easy Annotation</title>
+<style>
+  body { margin: 0; font: 16px/1.6 Georgia, serif; color: #222; }
+  nav { display: flex; gap: 20px; align-items: center; padding: 14px 32px; background: #14532d; color: #fff; font-family: sans-serif; }
+  nav a { color: #d1fae5; text-decoration: none; }
+  .hero { padding: 60px 32px; background: #f0fdf4; }
+  .hero h1 { margin: 0 0 8px; font-size: 34px; }
+  main { max-width: 680px; margin: 0 auto; padding: 40px 24px 500px; }
+  button.cta { padding: 10px 22px; border: 0; border-radius: 6px; background: #16a34a; color: #fff; font-size: 15px; cursor: pointer; }
+</style>
+</head>
+<body>
+  <nav><strong>Evergreen Trails</strong><a href="#">Routes</a><a href="#">Gear</a><a href="#">Journal</a></nav>
+  <div class="hero">
+    <h1>Find your next long walk</h1>
+    <p>Hand-mapped routes, honest difficulty ratings, and packing lists that fit in a carry-on.</p>
+    <button class="cta" id="cta">Browse routes</button>
+  </div>
+  <main>
+    <h2>The Ridgeway in three days</h2>
+    <p>Britain's oldest road runs 87 miles along the chalk downs. We split it into three
+       manageable days with a pub at the end of each one.</p>
+    <p>Day one climbs out of Overton Hill past the sarsen stones, a steady five hours of
+       wide green track with skylarks overhead. Carry more water than you think you need;
+       the downs are dry country.</p>
+    <h2>What to pack</h2>
+    <p>One change of socks per day, a windproof layer, and the smallest first-aid kit
+       you can assemble yourself. Skip the camping stove — this is pub-lunch territory.</p>
+  </main>
+  <script>
+  // emulate the extension runtime so the Tidy button shows, as it does when installed
+  window.chrome = { runtime: { sendMessage() {} } };
+  // seed annotations so the annotator restores them on load
+  localStorage.setItem('redline::' + location.origin + location.pathname, JSON.stringify({items: [
+    {x: 330, y: 26,  w: 0,   h: 0,  severity: 'high',   comment: 'Nav link contrast fails WCAG AA on the green background', context: '<a> “Journal”'},
+    {x: 26,  y: 100, w: 470, h: 58, severity: 'medium', comment: 'Headline gets clipped on narrow viewports — needs a responsive size', context: '<h1> “Find your next long walk”'},
+    {x: 310, y: 622, w: 0,   h: 0,  severity: 'low',    comment: 'Packing list should link to the gear shop', context: '<h2> “What to pack”'}
+  ]}));
+  </script>
+  <script src="/extension/annotator.js"></script>
+  <script>
+  // open the editor on issue 2 for the screenshot
+  window.addEventListener('load', () => setTimeout(() => {
+    const shadow = document.getElementById('__redline_host').shadowRoot;
+    const m = shadow.querySelector('.marker[data-index="1"]');
+    if (m) m.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  }, 300));
+  </script>
+</body>
+</html>
