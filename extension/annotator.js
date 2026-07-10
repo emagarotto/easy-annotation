@@ -1,5 +1,5 @@
 /*
- * Easy Annotation — live page annotator.
+ * Easy Annotation - Features Dictate & AI Tidy.
  * Runs as a Chrome extension content script (or plain <script> for testing).
  * All UI lives in a shadow root so host-page CSS can't touch it.
  * Coordinates are stored in document pixels; annotations persist per-URL.
@@ -829,6 +829,8 @@
     canvas.width = Math.round(vw * dpr);
     canvas.height = Math.round(totalH * dpr);
     const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff"; // JPEG has no transparency — avoid black gaps
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const origY = scrollY;
     panel.style.visibility = "hidden"; // keep markers visible, hide our chrome
@@ -850,7 +852,8 @@
       tab.style.visibility = "";
       scrollTo({ top: origY, left: 0, behavior: "instant" });
     }
-    return canvas.toDataURL("image/png");
+    // JPEG keeps report files ~5-10x smaller than PNG — matters for emailing
+    return canvas.toDataURL("image/jpeg", 0.85);
   }
 
   // ---------- export report ----------

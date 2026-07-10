@@ -599,7 +599,23 @@
   function readImageFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
     const reader = new FileReader();
-    reader.onload = () => setImage(reader.result);
+    reader.onload = () => {
+      // re-encode as JPEG: screenshots compress ~5-10x smaller than PNG with
+      // no visible loss, keeping localStorage and exported reports small
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const g = canvas.getContext("2d");
+        g.fillStyle = "#fff"; // JPEG has no transparency
+        g.fillRect(0, 0, canvas.width, canvas.height);
+        g.drawImage(img, 0, 0);
+        setImage(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = () => setImage(reader.result); // undecodable? keep the original
+      img.src = reader.result;
+    };
     reader.readAsDataURL(file);
   }
 

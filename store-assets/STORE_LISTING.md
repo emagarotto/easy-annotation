@@ -7,7 +7,10 @@ The uploadable package is the `extension/` folder, zipped (see checklist at the 
 
 ## Store listing
 
-**Name:** Easy Annotation
+**Name:** Easy Annotation - Features Dictate & AI Tidy
+*(the store title comes from the manifest's `name` field in the uploaded
+package — to change it, edit the manifest, bump `version`, rebuild the zip,
+and upload a new package)*
 
 **Summary** (≤132 characters):
 
