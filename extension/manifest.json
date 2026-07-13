@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Easy Annotation - Features Dictate & AI Tidy",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Click anywhere on a live page to add numbered issue markers with comments and Low/Medium/High severity. Print or export a report.",
   "icons": {
     "16": "icons/icon16.png",
