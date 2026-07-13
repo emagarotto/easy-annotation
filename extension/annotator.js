@@ -372,6 +372,23 @@
   const overlay = $("overlay"), panel = $("panel"), popover = $("popover"),
         list = $("list"), counts = $("counts"), tab = $("tab");
 
+  // ---------- event containment ----------
+  // Pages close dropdowns and nav panels on document-level mousedown/click
+  // ("click outside to dismiss") and on focus loss. Our events bubble out of
+  // the shadow tree to the page's document, so placing a badge on an open
+  // menu would dismiss it. Stop everything at our host boundary, and don't
+  // let our buttons steal the page's focus.
+  ["pointerdown", "pointerup", "mousedown", "mouseup", "click", "dblclick",
+   "touchstart", "touchend", "keydown", "keyup", "keypress", "focusin"].forEach((type) => {
+    host.addEventListener(type, (e) => e.stopPropagation());
+  });
+  host.addEventListener("mousedown", (e) => {
+    const t = e.composedPath()[0];
+    if (!(t && t.matches && t.matches("input, textarea, [contenteditable]"))) {
+      e.preventDefault(); // buttons don't need focus; the page keeps its own
+    }
+  });
+
   // ---------- overlay sizing ----------
   function sizeOverlay() {
     const de = document.documentElement;
